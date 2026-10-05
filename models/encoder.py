@@ -1,7 +1,7 @@
 import os
 import cv2
 import numpy as np
-from config import FRAME_WIDTH, FRAME_HEIGHT, BLOCK_SIZE, FPS, VIDEO_CODEC, STORAGE_SUFFIX, VIDEO_EXTENSION
+from config import FRAME_WIDTH, FRAME_HEIGHT, BLOCK_SIZE, FPS, VIDEO_CODEC, STORAGE_SUFFIX, VIDEO_EXTENSION, VIDEOS_OUTPUT_DIR
 
 
 class VideoEncoder:
@@ -63,7 +63,9 @@ class VideoEncoder:
         """Complete encoding process: file -> video."""
         try:
             self.log_message("--- Starting Encoding Process ---")
-            output_filename = f"{os.path.splitext(os.path.basename(filepath))[0]}{STORAGE_SUFFIX}{VIDEO_EXTENSION}"
+            os.makedirs(VIDEOS_OUTPUT_DIR, exist_ok=True)
+            base_name = f"{os.path.splitext(os.path.basename(filepath))[0]}{STORAGE_SUFFIX}{VIDEO_EXTENSION}"
+            output_filename = os.path.join(VIDEOS_OUTPUT_DIR, base_name)
             
             # 1. Create payload
             self.log_message("Step 1: Creating data payload with header...")

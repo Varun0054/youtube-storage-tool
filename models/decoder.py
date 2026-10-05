@@ -1,6 +1,6 @@
 import os
 import cv2
-from config import FRAME_WIDTH, FRAME_HEIGHT, BLOCK_SIZE, RECONSTRUCTED_PREFIX
+from config import FRAME_WIDTH, FRAME_HEIGHT, BLOCK_SIZE, RECONSTRUCTED_PREFIX, FILES_OUTPUT_DIR
 
 
 class VideoDecoder:
@@ -58,7 +58,8 @@ class VideoDecoder:
             i += 8
         
         parts = header_str.split('|')
-        filename = RECONSTRUCTED_PREFIX + parts[0]
+        os.makedirs(FILES_OUTPUT_DIR, exist_ok=True)
+        filename = os.path.join(FILES_OUTPUT_DIR, RECONSTRUCTED_PREFIX + parts[0])
         bit_count = int(parts[1])
         
         self.log_message(f"Header parsed. Reconstructing '{filename}'...")
