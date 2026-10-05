@@ -4,30 +4,54 @@
 
 A tool for encoding files into video format and decoding them back. This allows storing files as videos that can be uploaded to platforms like YouTube.
 
-## Project Structure
+## Project Structure (MVC)
+
+The project follows the **Model-View-Controller (MVC)** architecture:
 
 ```
 YtStorage/
-├── main.py                 # Main entry point
-├── config.py              # Configuration constants
-├── requirements.txt       # Python dependencies
-├── README.md             # This file
-├── youtube_storage_original.py  # Original monolithic file (backup)
-├── core/                 # Core encoding/decoding logic
+├── main.py                          # Entry point — wires View + Controller
+├── config.py                        # Configuration constants
+├── requirements.txt                 # Python dependencies
+├── README.md                        # This file
+├── youtube_storage_original.py      # Original monolithic file (backup)
+│
+├── models/                          # MODEL — business logic & data processing
 │   ├── __init__.py
-│   ├── encoder.py        # VideoEncoder class
-│   └── decoder.py        # VideoDecoder class
-└── gui/                  # GUI components
-    ├── __init__.py
-    └── main_window.py    # MainWindow class
+│   ├── encoder.py                   # VideoEncoder: file → video
+│   └── decoder.py                   # VideoDecoder: video → file
+│
+├── views/                           # VIEW — UI layout & display only
+│   ├── __init__.py
+│   └── main_view.py                 # MainView (Tkinter window)
+│
+├── controllers/                     # CONTROLLER — event handling & wiring
+│   ├── __init__.py
+│   └── app_controller.py            # AppController: connects View ↔ Model
+│
+└── output/                          # Generated files (git-ignored, folders tracked)
+    ├── videos/                      # Encoded videos saved here
+    │   └── .gitkeep
+    └── files/                       # Decoded/reconstructed files saved here
+        └── .gitkeep
 ```
+
+### MVC Responsibilities
+
+| Layer | Location | Responsibility |
+|---|---|---|
+| **Model** | `models/` | Encoding/decoding logic, file I/O, OpenCV operations |
+| **View** | `views/` | UI layout, widgets, display — zero business logic |
+| **Controller** | `controllers/` | Handles button events, threading, calls Model, updates View |
 
 ## Features
 
 - **File to Video Encoding**: Convert any file into a video format
 - **Video to File Decoding**: Extract files from encoded videos
 - **Clean GUI**: User-friendly interface with progress logging
-- **Modular Design**: Separated concerns for better maintainability
+- **MVC Architecture**: Cleanly separated concerns for maintainability
+- **Organised Output**: Encoded videos → `output/videos/`, decoded files → `output/files/`
+- **Threaded Processing**: UI stays responsive during long operations
 
 ## Installation
 
@@ -41,42 +65,49 @@ YtStorage/
    python main.py
    ```
 
+## Usage
+
+1. **Encode a file**:
+   - Click **Browse...** next to *File to Encode*
+   - Select any file
+   - Click **▶️ Start Encoding**
+   - Encoded video is saved to `output/videos/`
+
+2. **Decode a video**:
+   - Click **Browse...** next to *Video to Decode*
+   - Select an encoded `.mp4` video
+   - Click **◀️ Start Decoding**
+   - Reconstructed file is saved to `output/files/`
+
 ## How It Works
 
 1. **Encoding Process**:
-   - File → Binary data
-   - Binary data → Visual frames (white blocks = 1, black = 0)
-   - Frames → Video file
+   - File → Binary data (with filename + size header)
+   - Binary data → Visual frames (white block = 1, black block = 0)
+   - Frames → MP4 video saved to `output/videos/`
 
 2. **Decoding Process**:
-   - Video file → Frames
+   - MP4 video → Extract frames
    - Frames → Binary data
-   - Binary data → Original file
+   - Binary data → Parse header → Reconstruct original file → save to `output/files/`
 
 ## Configuration
 
 Edit `config.py` to modify:
-- Video resolution (FRAME_WIDTH, FRAME_HEIGHT)
-- Block size for binary representation
-- Video frame rate
-- File naming conventions
 
-## Usage
-
-1. **Encode a file**:
-   - Click "Browse..." to select a file
-   - Click "▶️ Start Encoding"
-   - Wait for the process to complete
-
-2. **Decode a video**:
-   - Click "Browse..." to select a video file
-   - Click "◀️ Start Decoding"
-   - Wait for the process to complete
+| Constant | Default | Description |
+|---|---|---|
+| `FRAME_WIDTH` | `1280` | Video frame width (px) |
+| `FRAME_HEIGHT` | `720` | Video frame height (px) |
+| `BLOCK_SIZE` | `10` | Pixel block size per bit |
+| `FPS` | `30` | Video frame rate |
+| `VIDEO_CODEC` | `mp4v` | OpenCV video codec |
+| `VIDEOS_OUTPUT_DIR` | `output/videos` | Where encoded videos are saved |
+| `FILES_OUTPUT_DIR` | `output/files` | Where decoded files are saved |
 
 ## Technical Details
 
-- Uses OpenCV for video processing
-- Converts files to binary, then to visual patterns
-- Stores metadata (filename, size) in video header
-- Supports any file type
-- Threaded processing to keep UI responsive
+- Uses **OpenCV** for video reading/writing
+- Stores metadata (filename, bit-length) in a binary header at the start of the video
+- Supports **any file type** (binary-level encoding)
+- Processing runs in a **background thread** to keep the UI responsive

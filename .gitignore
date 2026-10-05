@@ -42,5 +42,14 @@ Thumbs.db
 reconstructed_*
 *_storage.*
 
+# Output folders - ignore generated content, keep folder structure via .gitkeep
+output/videos/*
+output/files/*
+!output/videos/.gitkeep
+!output/files/.gitkeep
+
+# Office / temp lock files
+~$*
+
 # Keep the original backup file
 !youtube_storage_original.py
